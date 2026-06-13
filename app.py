@@ -77,7 +77,8 @@ with col2:
 st.subheader("📈 Curva de Precios Horarios")
 fig = px.line(
     df_f, x="timestamp_utc", y="precio_mwh", color="pais",
-    template="plotly_white", markers=True
+    template="plotly_white", markers=True,
+    color_discrete_sequence=["#00A36C", "#2ecc71", "#76d7c4"] # Paleta de verdes
 )
 fig.update_layout(hovermode="x unified", legend_title_text="País")
 fig.update_traces(connectgaps=True)
