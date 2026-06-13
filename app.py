@@ -8,10 +8,33 @@ import os
 st.set_page_config(page_title="Grenergy Energy Dashboard", layout="wide")
 
 # Estilo personalizado para un look más corporativo
+# 1. Configuración de estilo: Paleta Grenergy (Verde y Blanco)
 st.markdown("""
     <style>
-        .main { background-color: #f5f7f9; }
-        .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        /* Fondo general */
+        .main { background-color: #FFFFFF; }
+        
+        /* Sidebar en verde corporativo */
+        [data-testid="stSidebar"] {
+            background-color: #00A36C; 
+            color: white;
+        }
+        
+        /* Títulos y texto en el sidebar */
+        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] label {
+            color: white !important;
+        }
+
+        /* Estilo de las métricas */
+        div.stMetric {
+            background-color: #f0fdf4;
+            border-left: 5px solid #00A36C;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        /* Encabezados principales */
+        h1, h2 { color: #00A36C !important; }
     </style>
 """, unsafe_allow_html=True)
 
