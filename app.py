@@ -3,8 +3,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # ── Configuración inicial ─────────────────────────────────────────────────────
 st.set_page_config(
@@ -15,20 +14,47 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    .main { background-color: #FFFFFF; }
-    [data-testid="stSidebar"] { background-color: #00A36C; color: white; }
+    /* Fondo principal oscuro */
+    .main { background-color: #0f1a15; }
+    section[data-testid="stMain"] { background-color: #0f1a15; }
+
+    /* Sidebar verde corporativo */
+    [data-testid="stSidebar"] { background-color: #00A36C; }
     [data-testid="stSidebar"] h1,
     [data-testid="stSidebar"] h2,
     [data-testid="stSidebar"] h3,
     [data-testid="stSidebar"] label,
-    [data-testid="stSidebar"] p { color: white !important; }
-    div.stMetric {
-        background-color: #f0fdf4;
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span { color: white !important; }
+
+    /* Títulos principales */
+    h1, h2, h3 { color: #00A36C !important; }
+
+    /* Texto general en blanco */
+    p, span, div { color: #e0e0e0; }
+
+    /* Métricas KPI */
+    div[data-testid="stMetric"] {
+        background-color: #1e3a2f;
         border-left: 5px solid #00A36C;
-        padding: 15px;
-        border-radius: 5px;
+        padding: 16px;
+        border-radius: 8px;
     }
-    h1, h2 { color: #00A36C !important; }
+    div[data-testid="stMetricLabel"] > div {
+        color: #a8d5b5 !important;
+        font-size: 0.85rem;
+    }
+    div[data-testid="stMetricValue"] > div {
+        color: #ffffff !important;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    /* Separador */
+    hr { border-color: #1e3a2f; }
+
+    /* Expander */
+    details { background-color: #1a2e23; border-radius: 8px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -37,9 +63,8 @@ st.markdown("Análisis comparativo de mercados eléctricos en Europa (€/MWh)."
 
 # ── Constantes ────────────────────────────────────────────────────────────────
 API_BASE = "http://127.0.0.1:8000"
-# El token se lee desde variable de entorno igual que la API.
-API_KEY = os.getenv("GRENERGY_API_KEY", "")
-HEADERS = {"X-API-Key": API_KEY}
+API_KEY  = os.getenv("GRENERGY_API_KEY", "")
+HEADERS  = {"X-API-Key": API_KEY}
 CSV_FALLBACK = os.path.join(os.path.dirname(__file__), "gold_precios_horarios_europa.csv")
 PAISES_COLOR = {
     "Alemania": "#00A36C",
@@ -51,7 +76,6 @@ PAISES_COLOR = {
 # ── Carga de datos ────────────────────────────────────────────────────────────
 @st.cache_data(ttl=3600)
 def load_data() -> tuple[pd.DataFrame, str]:
-    """Intenta la API primero; si falla, usa el CSV snapshot."""
     try:
         res = requests.get(
             f"{API_BASE}/api/v1/precios",
@@ -60,15 +84,14 @@ def load_data() -> tuple[pd.DataFrame, str]:
             timeout=5,
         )
         if res.status_code == 200:
-            payload = res.json()
-            return pd.DataFrame(payload["data"]), "API REST (Local)"
+            return pd.DataFrame(res.json()["data"]), "API REST (Local)"
         else:
             st.sidebar.warning(f"API respondió {res.status_code}. Usando CSV.")
     except Exception as e:
-        st.sidebar.warning(f"API no disponible ({e}). Usando CSV.")
+        st.sidebar.warning(f"API no disponible. Usando CSV.")
 
     if not os.path.exists(CSV_FALLBACK):
-        st.error("No se encontró el CSV de datos. Asegúrate de que gold_precios_horarios_europa.csv esté en el directorio.")
+        st.error("No se encontró el CSV de datos.")
         st.stop()
 
     return pd.read_csv(CSV_FALLBACK), "Archivo CSV (Snapshot)"
@@ -80,11 +103,9 @@ df_raw["timestamp_utc"] = pd.to_datetime(df_raw["timestamp_utc"], utc=True)
 # ── Sidebar: filtros ──────────────────────────────────────────────────────────
 st.sidebar.header("🎛️ Filtros de Análisis")
 
-# Filtro por país
 todos_paises = sorted(df_raw["pais"].unique())
 paises_sel = st.sidebar.multiselect("Países:", todos_paises, default=todos_paises)
 
-# Filtro por rango de fechas
 fecha_min = df_raw["timestamp_utc"].min().date()
 fecha_max = df_raw["timestamp_utc"].max().date()
 
@@ -96,7 +117,6 @@ if fecha_inicio > fecha_fin:
     st.sidebar.error("La fecha de inicio debe ser anterior a la fecha fin.")
     st.stop()
 
-# Opción de granularidad
 granularidad = st.sidebar.radio(
     "Granularidad:",
     ["Horaria (original)", "Diaria (agregada)"],
@@ -119,7 +139,6 @@ if df_f.empty:
     st.warning("No hay datos para los filtros seleccionados.")
     st.stop()
 
-# Agregación diaria si se solicita
 if granularidad == "Diaria (agregada)":
     df_f["fecha"] = df_f["timestamp_utc"].dt.date
     df_f = (
@@ -148,26 +167,35 @@ fig_line = px.line(
     x="timestamp_utc",
     y="precio_mwh",
     color="pais",
-    template="plotly_white",
+    template="plotly_dark",
     color_discrete_map=color_map,
     labels={"timestamp_utc": "Fecha/Hora (UTC)", "precio_mwh": "€/MWh", "pais": "País"},
 )
-fig_line.update_layout(hovermode="x unified", legend_title_text="País")
+fig_line.update_layout(
+    hovermode="x unified",
+    legend_title_text="País",
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="#0f1a15",
+)
 fig_line.update_traces(connectgaps=True)
 st.plotly_chart(fig_line, use_container_width=True)
 
-# ── Gráfico comparativo (box plot) ───────────────────────────────────────────
+# ── Box plot comparativo ──────────────────────────────────────────────────────
 st.subheader("📊 Distribución Comparativa por País")
 fig_box = px.box(
     df_f,
     x="pais",
     y="precio_mwh",
     color="pais",
-    template="plotly_white",
+    template="plotly_dark",
     color_discrete_map=color_map,
     labels={"pais": "País", "precio_mwh": "€/MWh"},
 )
-fig_box.update_layout(showlegend=False)
+fig_box.update_layout(
+    showlegend=False,
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="#0f1a15",
+)
 st.plotly_chart(fig_box, use_container_width=True)
 
 # ── Tabla de datos brutos ─────────────────────────────────────────────────────
