@@ -58,7 +58,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🇪🇺 Dashboard de Precios de Energía")
+st.title("Dashboard de Precios de Energía — Europa")
 st.markdown("Análisis comparativo de mercados eléctricos en Europa (€/MWh).")
 
 # ── Constantes ────────────────────────────────────────────────────────────────
