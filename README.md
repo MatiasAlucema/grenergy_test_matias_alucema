@@ -109,13 +109,13 @@ pip install -r requirements.txt
 
 `requirements.txt`:
 ```
-fastapi
-uvicorn
-pandas
-streamlit
-plotly
-requests
-python-multipart
+fastapi==0.111.0
+uvicorn==0.29.0
+pandas==2.2.2
+streamlit==1.35.0
+plotly==5.22.0
+requests==2.32.2
+python-multipart==0.0.9
 ```
 
 ---
@@ -163,7 +163,15 @@ streamlit run app.py
 # Dashboard disponible en http://localhost:8501
 ```
 
-### 5. Probar la API manualmente
+### 5. Interfaz web
+
+El dashboard está desplegado en Streamlit Cloud y accesible públicamente:
+
+🔗 [https://grenergytestmatiasalucema-clyatzqwntytkwgb4on6mh.streamlit.app/](https://grenergytestmatiasalucema-clyatzqwntytkwgb4on6mh.streamlit.app/)
+
+Para ejecutarlo localmente, sigue los pasos anteriores y accede en `http://localhost:8501`.
+
+### 6. Probar la API manualmente
 
 ```bash
 # Con curl
