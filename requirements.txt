@@ -1,7 +1,7 @@
-fastapi
-uvicorn
-pandas
-streamlit
-requests
-plotly
-watchfiles
+fastapi==0.111.0
+uvicorn==0.29.0
+pandas==2.2.2
+streamlit==1.35.0
+plotly==5.22.0
+requests==2.32.2
+python-multipart==0.0.9
